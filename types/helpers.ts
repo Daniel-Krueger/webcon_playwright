@@ -16,7 +16,7 @@ export async function showDetailsInfoTab(page: Page) {
   // Are steps visible
   //expect(await page.locator("div[data-name='stepInfos']")).toBeVisible();
 
-  await page.locator("#formContainer #toolbar").waitFor();
+  await page.locator("#formContainer #toolbar").first().waitFor();
   if ((await page.locator("div[data-name='stepInfos']").isVisible()) == false) {
     // Is details tab of info panel visible
     if ((await page.locator("#info-panel").isVisible()) == false) {

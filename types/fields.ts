@@ -40,7 +40,7 @@ export class MultiLineTextField extends BaseField {
   }
 }
 
-export class ChooseField extends BaseField {
+export class ChooseFieldPopupSearch extends BaseField {
   constructor(label: string, column: string, value: any) {
     super(label, column, value);
     this.locator = `#${this.column} button.picker-search-button`;
