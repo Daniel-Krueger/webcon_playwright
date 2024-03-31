@@ -40,5 +40,5 @@ https://playwright.dev/docs/codegen#recording-a-test
 
 # Blog posts
 These are related blog posts ordered by publishing date and there respective branch.
-- https://daniels-notes.de/posts/2024/playwright<br/>
+- https://daniels-notes.de/posts/2024/playwright-first-steps<br/>
   https://github.com/Daniel-Krueger/webcon_playwright/tree/iteration1
