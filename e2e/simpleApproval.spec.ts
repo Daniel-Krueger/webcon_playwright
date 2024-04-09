@@ -1,29 +1,55 @@
 import { test, expect, Page } from "@playwright/test";
 import { getAuthenticatedPage } from "../types/authentication";
-import { ChooseFieldPopupSearch, MultiLineTextField, TextField } from "../types/fields";
+import {
+  ChooseFieldPopupSearch,
+  GroupField,
+  MultiLineTextField,
+  NumberField,
+  TabField,
+  TextField,
+} from "../types/fields";
 import { IFormData, EnrichedFormData } from "../types/formData";
-import { getIdFromUrl, showDetailsInfoTab } from "../types/helpers";
+import {
+  getIdFromUrl,
+  setAndCheckControls,
+  showDetailsInfoTab,
+} from "../types/helpers";
 import environment from "../.auth/simpleApprovalEnvironment";
 
-
 const submitData: IFormData = {
-  fieldValues: [
-    new TextField("Title", "AttText1Glob", "My title"),
-    new ChooseFieldPopupSearch("Responsible", "AttChoose1", "Demo Two"),
-    new MultiLineTextField(
-      "Description",
-      "AttLong1",
-      "My long text\r\nsome new line."
-    ),
+  controls: [
+    
+    new TabField("Second tab", 1025, [
+      new NumberField("Input field", "AttInt1", 2, false),
+    ]),
+    new TabField("General", 1026, [
+      new TextField("Title", "AttText1Glob", "My title", false),
+      new MultiLineTextField(
+        "Description",
+        "AttLong1",
+        "My long text\r\nsome new line."
+      ),
+    ]),
+    new GroupField("Roles", 1024, [
+      new ChooseFieldPopupSearch("Responsible", "AttChoose1", "Demo Two", true),
+    ]),
   ],
   pathId: 292, // Submit
+  currentStepId: 230, // Start
 };
 
 const approvalData: IFormData = {
-  fieldValues: [
+  controls: [
     new MultiLineTextField("Decision", "AttLong2", "Yes, it's approved."),
   ],
   pathId: 293, // Approve
+  currentStepId: 230, // In approval
+};
+
+const approvedData: IFormData = {
+  controls: [],
+  pathId: 0, // No path action
+  currentStepId: 229, // Approved
 };
 
 test.describe.serial("Submit and approve", () => {
@@ -42,13 +68,17 @@ test.describe.serial("Submit and approve", () => {
     // Update data with multilingual labels
     const data = await EnrichedFormData.BuildInstance(page, submitData);
 
+    // Verify that the workflow is in step 'In approval' by checking that this step is marked as 'Active' in the information panel.
+    await showDetailsInfoTab(page);
+    expect(await page.locator(".step-info-row--active").innerText()).toBe(
+      data.currentStepTitle
+    );
+
     // Set value and verify it was set.
-    for (const field of data.fieldValues) {
-      await field.setAndExpect(page);
-    }
+    await setAndCheckControls(page, data.controls);
 
     // Path transition
-    await page.getByRole("button", { name: data.pathName }).click();
+    await page.getByRole("button", { name: data.pathTitle }).click();
 
     // Check the "green" notification of the successful path transition is displayed
     signature = await page.locator(".signature-button").innerText();
@@ -67,22 +97,20 @@ test.describe.serial("Submit and approve", () => {
     // Authenticate
     const page = await getAuthenticatedPage(browser, url, environment.userTwo);
 
-    // Verify that the workflow is in step 'In approval' by checking that this step is marked as 'Active' in the information panel.
-    await showDetailsInfoTab(page);
-    expect(await page.locator(".step-info-row--active").innerText()).toBe(
-      "In approval"
-    );
-
     // Update data with multilingual labels
     const data = await EnrichedFormData.BuildInstance(page, approvalData);
 
+    // Verify that the workflow is in step 'In approval' by checking that this step is marked as 'Active' in the information panel.
+    await showDetailsInfoTab(page);
+    expect(await page.locator(".step-info-row--active").innerText()).toBe(
+      data.currentStepTitle
+    );
+
     // Set value and verify it was set.
-    for (const field of data.fieldValues) {
-      await field.setAndExpect(page);
-    }
+    await setAndCheckControls(page, data.controls);
 
     // Check the "green" notification of the successful path transition is displayed
-    await page.getByRole("button", { name: data.pathName }).click();
+    await page.getByRole("button", { name: data.pathTitle }).click();
     expect(await page.locator(".signature-button")).toBeVisible();
   });
 
@@ -90,12 +118,15 @@ test.describe.serial("Submit and approve", () => {
     // Target url
     let url = environment.hostname + `/db/14/app/50/element/${wfElementId}`;
     // Authenticate
-    const page = await getAuthenticatedPage(browser, url, environment.userTwo);
+    const page = await getAuthenticatedPage(browser, url, environment.userOne);
 
-    // Verify that the workflow is in step 'Approved' by checking that this step is marked as 'Active' in the information panel.
+    // Update data with multilingual labels
+    const data = await EnrichedFormData.BuildInstance(page, approvedData);
+
+    // Verify that the workflow is in step 'In approval' by checking that this step is marked as 'Active' in the information panel.
     await showDetailsInfoTab(page);
     expect(await page.locator(".step-info-row--active").innerText()).toBe(
-      "Approved"
+      data.currentStepTitle
     );
   });
 });

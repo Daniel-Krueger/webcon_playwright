@@ -1,5 +1,8 @@
 import { chromium, Browser, Page } from "playwright";
 import { test, expect } from "@playwright/test";
+import { BaseField, GroupField, IField, IFormData, TabField } from "./fields";
+import { EnrichedFormData } from "./formData";
+import { group } from "console";
 
 export function getIdFromUrl(precedingElement: string, url: string): number {
   const regex = new RegExp("/" + precedingElement + "/([0-9]+)(/|$)");
@@ -29,3 +32,24 @@ export async function showDetailsInfoTab(page: Page) {
   expect(await page.locator("div[data-name='stepInfos']")).toBeVisible();
 }
 
+export async function setAndCheckControls(page: Page, controls: IField[]) {
+  for (const control of controls) {
+    if (control instanceof TabField) {
+      // Activate the tab and process all controls.
+      await page
+        .locator(
+          "ul:not(.tab-panel__header__hidden-content) " + control.locator
+        )
+        .click();
+      await setAndCheckControls(page, control.controls);
+    } else if (control instanceof GroupField) {
+      const groupElement = page.locator(control.locator + "children");
+      if ((await groupElement.all()).length == 0) {
+        await groupElement.click();
+      }      
+      await setAndCheckControls(page, control.controls);
+    } else if (control instanceof BaseField) {
+      await control.set(page);
+    }
+  }
+}

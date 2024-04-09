@@ -1,22 +1,28 @@
 import { chromium, Browser, Page } from "playwright";
 import { test, expect } from "@playwright/test";
-import { BaseField } from "./fields";
+import { IField } from "./fields";
 import { getIdFromUrl } from "./helpers";
 
 declare const window: any;
 
 export interface IFormData {
-  fieldValues: BaseField[];
+  controls: IField[];
   pathId: number;
+  currentStepId: number;
 }
 
 export class EnrichedFormData implements IFormData {
-  fieldValues: BaseField[];
+  controls: IField[];
   pathId: number;
-  pathName: string;
+  /** The translated path title for the current user*/ 
+  pathTitle: string;
+  currentStepId: number;
+  /** The translated path title for the current user */
+  currentStepTitle: number;
   private constructor(formData: IFormData) {
-    this.fieldValues = formData.fieldValues;
+    this.controls = formData.controls;
     this.pathId = formData.pathId;
+    this.currentStepId = formData.currentStepId;
   }
 
   static async BuildInstance(
@@ -50,7 +56,13 @@ export class EnrichedFormData implements IFormData {
     var pathObject = model.liteData.liteModel.paths.find(
       (obj) => obj.id === this.pathId
     );
-    this.pathName = pathObject.title;
-    expect(this.pathName).not.toBeNull();
+    this.pathTitle = pathObject.title;
+    expect(this.pathTitle).not.toBeNull();
+
+    var stepObject = model.liteData.liteModel.formInfo.stepsHistoryInfo.stepInfos.find(
+      (obj) => obj.stepId === this.currentStepId
+    );
+    this.currentStepTitle = stepObject.stepName;
+    expect(this.currentStepTitle).not.toBeNull();
   }
 }
