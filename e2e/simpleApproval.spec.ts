@@ -7,6 +7,7 @@ import {
   NumberField,
   TabField,
   TextField,
+  FieldActionType,
 } from "../types/fields";
 import { IFormData, EnrichedFormData } from "../types/formData";
 import {
@@ -18,20 +19,33 @@ import environment from "../.auth/simpleApprovalEnvironment";
 
 const submitData: IFormData = {
   controls: [
-    
-    new TabField("Second tab", 1025, [
-      new NumberField("Input field", "AttInt1", 2, false),
-    ]),
     new TabField("General", 1026, [
-      new TextField("Title", "AttText1Glob", "My title", false),
+      new TextField("Title", "AttText1Glob", "My title"),
       new MultiLineTextField(
         "Description",
         "AttLong1",
         "My long text\r\nsome new line."
       ),
     ]),
+    new TabField("Second tab", 1025, [
+      new NumberField("Input field", "AttInt1", 2),
+
+      new GroupField("Output", 1027, [
+        new NumberField("Output by form rule", "AttInt2", 2 * 2, {
+          action: FieldActionType.CheckOnly,
+        }),
+        new NumberField(
+          "Output by form rule with business rule",
+          "AttInt3",
+          2 * 3,
+          { action: FieldActionType.CheckOnly }
+        ),
+      ]),
+    ]),
     new GroupField("Roles", 1024, [
-      new ChooseFieldPopupSearch("Responsible", "AttChoose1", "Demo Two", true),
+      new ChooseFieldPopupSearch("Responsible", "AttChoose1", "Demo Two", {
+        isRequired: true,
+      }),
     ]),
   ],
   pathId: 292, // Submit
@@ -43,7 +57,7 @@ const approvalData: IFormData = {
     new MultiLineTextField("Decision", "AttLong2", "Yes, it's approved."),
   ],
   pathId: 293, // Approve
-  currentStepId: 230, // In approval
+  currentStepId: 231, // In approval
 };
 
 const approvedData: IFormData = {
@@ -55,7 +69,7 @@ const approvedData: IFormData = {
 test.describe.serial("Submit and approve", () => {
   let signature: string;
   // Element id to us, in case a specific test should be used/debugged.
-  let wfElementId: number = 2270;
+  let wfElementId: number = 2290;
 
   test("Submit workflow as user 1", async ({ browser }) => {
     // Target url

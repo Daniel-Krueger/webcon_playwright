@@ -14,7 +14,7 @@ export interface IFormData {
 export class EnrichedFormData implements IFormData {
   controls: IField[];
   pathId: number;
-  /** The translated path title for the current user*/ 
+  /** The translated path title for the current user*/
   pathTitle: string;
   currentStepId: number;
   /** The translated path title for the current user */
@@ -53,15 +53,17 @@ export class EnrichedFormData implements IFormData {
   }
 
   private updateValuesFromModel(model: any) {
-    var pathObject = model.liteData.liteModel.paths.find(
-      (obj) => obj.id === this.pathId
-    );
-    this.pathTitle = pathObject.title;
-    expect(this.pathTitle).not.toBeNull();
-
-    var stepObject = model.liteData.liteModel.formInfo.stepsHistoryInfo.stepInfos.find(
-      (obj) => obj.stepId === this.currentStepId
-    );
+    if (this.pathId > 0) {
+      var pathObject = model.liteData.liteModel.paths.find(
+        (obj) => obj.id === this.pathId
+      );
+      this.pathTitle = pathObject.title;
+      expect(this.pathTitle).not.toBeNull();
+    }
+    var stepObject =
+      model.liteData.liteModel.formInfo.stepsHistoryInfo.stepInfos.find(
+        (obj) => obj.stepId === this.currentStepId
+      );
     this.currentStepTitle = stepObject.stepName;
     expect(this.currentStepTitle).not.toBeNull();
   }

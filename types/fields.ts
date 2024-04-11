@@ -1,8 +1,20 @@
 import { chromium, Browser, Page } from "playwright";
-import { test, expect } from "@playwright/test";
+import { test, expect, Locator } from "@playwright/test";
 import exp from "constants";
+import { error } from "console";
 
 declare const window: any;
+
+export enum FieldActionType {
+  // Example values, replace with your actual ActionType enum members
+  SetAndCheck,
+  CheckOnly,
+}
+
+interface FieldOptions {
+  isRequired?: boolean;
+  action?: FieldActionType;
+}
 
 export interface IFormData {
   formInfo: IField[];
@@ -40,17 +52,47 @@ export class GroupField implements IField, IFieldContainer {
 }
 export abstract class BaseField implements IField {
   locator: string;
+  isRequired: boolean;
+  /** The default action type will be Set and check, you can overwrite it with an option. */
+  actionType: FieldActionType;
   constructor(
     public label: string,
     public column: string,
     public value: any,
-    public isRequired?: boolean
+    options?: FieldOptions
   ) {
-    this.label = label;
-    this.column = column;
-    this.value = value;
-    this.isRequired = isRequired ?? false;
+    this.isRequired = options?.isRequired ?? false;
+    this.actionType = options?.action ?? FieldActionType.SetAndCheck;
   }
+
+  action = async function (page: Page) {
+    switch (this.actionType) {
+      case FieldActionType.CheckOnly:
+        await this.checkValue(page);
+        break;
+      case FieldActionType.SetAndCheck:
+        await this.set(page);
+        break;
+      default:
+        throw "not implemented";
+    }
+  };
+  checkValue = async function (page: Page) {
+    const elementLocator = page.locator(`#${this.column}`);
+    let valueLocator: Locator;
+    console.log(
+      "Number of inputs " + (await elementLocator.locator("input").count())
+    );
+    if ((await elementLocator.locator("input").count()) == 1) {
+      expect(await elementLocator.locator("input").inputValue()).toBe(
+        this.value.toString()
+      );
+    } else {
+      expect(await elementLocator.locator(".form-control-readonly").innerText).toBe(
+        this.value.toString()
+      );
+    }    
+  };
   checkRequired = async function (page: Page) {
     if (this.isRequired) {
       await expect(
@@ -74,14 +116,24 @@ export abstract class BaseField implements IField {
 }
 
 export class TextField extends BaseField {
-  constructor(label: string, column: string, value: any, isRequired?: boolean) {
-    super(label, column, value, isRequired);
+  constructor(
+    label: string,
+    column: string,
+    value: any,
+    options?: FieldOptions
+  ) {
+    super(label, column, value, options);
     this.locator = `#${this.column} input`;
   }
 }
 export class NumberField extends BaseField {
-  constructor(label: string, column: string, value: any, isRequired?: boolean) {
-    super(label, column, value, isRequired);
+  constructor(
+    label: string,
+    column: string,
+    value: any,
+    options?: FieldOptions
+  ) {
+    super(label, column, value, options);
     this.locator = `#${this.column} input`;
   }
   override set = async function (page: Page) {
@@ -99,15 +151,25 @@ export class NumberField extends BaseField {
 }
 
 export class MultiLineTextField extends BaseField {
-  constructor(label: string, column: string, value: any, isRequired?: boolean) {
-    super(label, column, value, isRequired);
+  constructor(
+    label: string,
+    column: string,
+    value: any,
+    options?: FieldOptions
+  ) {
+    super(label, column, value, options);
     this.locator = `#${this.column} textarea`;
   }
 }
 
 export class ChooseFieldPopupSearch extends BaseField {
-  constructor(label: string, column: string, value: any, isRequired?: boolean) {
-    super(label, column, value, isRequired);
+  constructor(
+    label: string,
+    column: string,
+    value: any,
+    options?: FieldOptions
+  ) {
+    super(label, column, value, options);
     this.locator = `#${this.column} button.picker-search-button`;
   }
 

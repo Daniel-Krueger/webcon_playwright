@@ -42,14 +42,13 @@ export async function setAndCheckControls(page: Page, controls: IField[]) {
         )
         .click();
       await setAndCheckControls(page, control.controls);
-    } else if (control instanceof GroupField) {
-      const groupElement = page.locator(control.locator + "children");
-      if ((await groupElement.all()).length == 0) {
-        await groupElement.click();
+    } else if (control instanceof GroupField) {      
+      if ((await page.locator(control.locator + "children").innerHTML()) == '') {
+        await page.locator(control.locator + " span").click();
       }      
       await setAndCheckControls(page, control.controls);
     } else if (control instanceof BaseField) {
-      await control.set(page);
+      await control.action(page);
     }
   }
 }
