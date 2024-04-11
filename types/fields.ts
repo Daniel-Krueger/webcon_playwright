@@ -5,14 +5,15 @@ import { error } from "console";
 
 declare const window: any;
 
-export enum FieldActionType {
-  // Example values, replace with your actual ActionType enum members
+export enum FieldActionType {  
   SetAndCheck,
   CheckOnly,
 }
 
 interface FieldOptions {
-  isRequired?: boolean;
+  /** Defines, whether the field should have be the required attribute. */
+  isRequired?: boolean;  
+  /** The default action type will be Set and check, you can overwrite it with an option. */
   action?: FieldActionType;
 }
 
