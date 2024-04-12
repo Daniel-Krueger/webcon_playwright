@@ -10,8 +10,15 @@ export enum FieldActionType {
   CheckOnly,
 }
 
+export enum FieldEditable {  
+  Editable,
+  EditableViaJavaScript,
+  ReadOnly,
+}
+
+
 interface FieldOptions {
-  /** Defines, whether the field should have be the required attribute. */
+  /** Defines, whether the field should be marked as required. */
   isRequired?: boolean;  
   /** The default action type will be Set and check, you can overwrite it with an option. */
   action?: FieldActionType;
