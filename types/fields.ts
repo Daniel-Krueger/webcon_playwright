@@ -5,23 +5,29 @@ import { error } from "console";
 
 declare const window: any;
 
-export enum FieldActionType {  
+export enum FieldActionType {
   SetAndCheck,
   CheckOnly,
 }
 
-export enum FieldEditable {  
+export enum FieldEditability {
   Editable,
-  EditableViaJavaScript,
   ReadOnly,
+  ReadOnlyJS,
+  Conditional,
 }
-
-
-interface FieldOptions {
+export enum FieldVisibility {
+  Visible,
+  Hidden,
+  Conditional,
+}
+export interface FieldOptions {
   /** Defines, whether the field should be marked as required. */
-  isRequired?: boolean;  
+  isRequired?: boolean;
   /** The default action type will be Set and check, you can overwrite it with an option. */
   action?: FieldActionType;
+  editability?: FieldEditability;
+  visibility?: FieldVisibility;
 }
 
 export interface IFormData {
@@ -37,6 +43,16 @@ export interface IField {
   label: string;
   locator: string;
   column: string;
+}
+
+/** Not really needed just to simulate the form layout */
+export class TabPanelField implements IField, IFieldContainer {
+  locator: string;
+  column: string = "TabPanel";
+  controls: IField[];
+  constructor(public label: string, public id: number, controls?: IField[]) {
+    this.controls = controls ?? [];
+  }
 }
 
 export class TabField implements IField, IFieldContainer {
@@ -61,8 +77,10 @@ export class GroupField implements IField, IFieldContainer {
 export abstract class BaseField implements IField {
   locator: string;
   isRequired: boolean;
+  editability: FieldEditability;
   /** The default action type will be Set and check, you can overwrite it with an option. */
   actionType: FieldActionType;
+  visibility: FieldVisibility;
   constructor(
     public label: string,
     public column: string,
@@ -70,6 +88,8 @@ export abstract class BaseField implements IField {
     options?: FieldOptions
   ) {
     this.isRequired = options?.isRequired ?? false;
+    this.editability = options?.editability ?? FieldEditability.ReadOnly;
+    this.visibility = options?.visibility ?? FieldVisibility.Visible;
     this.actionType = options?.action ?? FieldActionType.SetAndCheck;
   }
 
@@ -96,10 +116,10 @@ export abstract class BaseField implements IField {
         this.value.toString()
       );
     } else {
-      expect(await elementLocator.locator(".form-control-readonly").innerText).toBe(
-        this.value.toString()
-      );
-    }    
+      expect(
+        await elementLocator.locator(".form-control-readonly").innerText
+      ).toBe(this.value.toString());
+    }
   };
   checkRequired = async function (page: Page) {
     if (this.isRequired) {

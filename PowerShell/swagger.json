@@ -13113,7 +13113,7 @@
                     "ignoreReadonly",
                     "admin"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.AppData": {
@@ -13141,7 +13141,7 @@
                     "MetadataAccess",
                     "ReadOnly"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.ApplicationInfo": {
@@ -13560,7 +13560,7 @@
                     "BpsSecurityGroup",
                     "ApiApplication"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.CalculatedTextCell": {
@@ -13675,7 +13675,7 @@
                     "RelativeAttachments",
                     "SelectColumn"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.CommentEntry": {
@@ -13781,7 +13781,7 @@
                     "SOAP",
                     "SharePoint"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.Constant": {
@@ -14206,7 +14206,7 @@
                     "ReadOnly",
                     "ReadOnlyJS"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.ElemAttachment": {
@@ -14351,7 +14351,7 @@
                     "standard",
                     "formLayout"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.ExtendedAttachment": {
@@ -14445,7 +14445,7 @@
                     "SurveyChoose",
                     "Html"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.FormLayoutInfo": {
@@ -15006,7 +15006,7 @@
                     "Incremental",
                     "Exact"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.MoveElementStatus": {
@@ -15017,7 +15017,7 @@
                     "Rollback",
                     "Unknown"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.NewAppPrivilege": {
@@ -15674,7 +15674,7 @@
                     "ModifyWithoutDeleting",
                     "Administrator"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.PermissionsScope": {
@@ -15682,7 +15682,7 @@
                     "Process",
                     "Element"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.PickerCell": {
@@ -15836,7 +15836,7 @@
                     "RightPanel",
                     "BottomPanel"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.Position": {
@@ -15956,7 +15956,7 @@
                     "ManageArchive",
                     "DesignerDeskEditInPortal"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.RatingScale": {
@@ -16013,7 +16013,7 @@
                     "Optional",
                     "Conditional"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.Requiredness": {
@@ -16021,7 +16021,7 @@
                     "Mandatory",
                     "Optional"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.RestAuthentication": {
@@ -16038,7 +16038,7 @@
                     "Custom",
                     "Basic"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.RestCommon": {
@@ -16070,7 +16070,7 @@
                     "Application",
                     "User"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.RestConnection": {
@@ -16147,7 +16147,7 @@
                     "SetTargetFields",
                     "TypedInValue"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.SharepointCommon": {
@@ -16190,7 +16190,7 @@
                     "UserDefined",
                     "CurrentUser"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.SharepointEnvironment": {
@@ -16221,7 +16221,7 @@
                     "Sharepoint2019",
                     "SharepointOnline"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.SoapBinding": {
@@ -16232,7 +16232,7 @@
                     "HttpsBasic",
                     "HttpsNoCredentials"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.SoapCommon": {
@@ -16543,7 +16543,7 @@
                     "Flagged",
                     "Postponed"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.TaskToDelegate": {
@@ -16765,7 +16765,7 @@
                     "Dashboard",
                     "Start"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.User": {
@@ -16787,7 +16787,7 @@
                     "Synchronized",
                     "WaitingForSynchronization"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.UserTask": {
@@ -16962,7 +16962,7 @@
                     "Hidden",
                     "Conditional"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "3.0.Workflow": {
@@ -17382,7 +17382,7 @@
                     "DecimalPoint",
                     "DecimalComma"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "4.0.DropdownConfig": {
@@ -17405,7 +17405,7 @@
                     "ReadOnlyJS",
                     "Conditional"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "4.0.FieldToResolve": {
@@ -17609,7 +17609,7 @@
                     "Default",
                     "Additional"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "4.0.PersonInfo": {
@@ -17868,7 +17868,7 @@
                     "Id",
                     "Name"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "4.0.ResolvedFieldColumns": {
@@ -17951,7 +17951,7 @@
                     "SystemWaitingForOcrAiLearn",
                     "SystemStart"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "4.0.SubstitutePerson": {
@@ -17998,7 +17998,7 @@
                     "TaskDelegation",
                     "WorkingOnBehalf"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "4.0.SubstitutionsCollection": {
@@ -18247,7 +18247,7 @@
                     "SharePoint",
                     "Exchange"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "5.0.ConnectionsCollection": {
@@ -18520,7 +18520,7 @@
                     "SingleSolutionUser",
                     "ExternalUser"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "5.0.LicensesSummaryCollection": {
@@ -18759,7 +18759,7 @@
                     "Created",
                     "Modified"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "5.0.PickerCell": {
@@ -18874,7 +18874,7 @@
                     "EwsBasicAuth",
                     "MicrosoftGraph"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "5.0.SetValueMode": {
@@ -18885,7 +18885,7 @@
                     "Search",
                     "SearchAndSetTargetFields"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "5.0.SingleSolutionLicense": {
@@ -19214,7 +19214,7 @@
                     "FunctionImport",
                     "Singleton"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "Microsoft.OData.Edm.EdmExpressionKind": {
@@ -19246,7 +19246,7 @@
                     "EnumMember",
                     "AnnotationPath"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "Microsoft.OData.Edm.EdmSchemaElementKind": {
@@ -19258,7 +19258,7 @@
                     "EntityContainer",
                     "Function"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "Microsoft.OData.Edm.EdmTypeKind": {
@@ -19274,7 +19274,7 @@
                     "Untyped",
                     "Path"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "Microsoft.OData.Edm.IEdmEntityContainer": {
@@ -19806,7 +19806,7 @@
                     "UnspecifiedLocal",
                     "Utc"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Data.DataTable": {
@@ -19820,7 +19820,7 @@
                     "SimpleContent",
                     "Hidden"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Data.SchemaSerializationMode": {
@@ -19828,7 +19828,7 @@
                     "IncludeSchema",
                     "ExcludeSchema"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Data.SerializationFormat": {
@@ -19836,7 +19836,7 @@
                     "Xml",
                     "Binary"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.DayOfWeek": {
@@ -19849,7 +19849,7 @@
                     "Friday",
                     "Saturday"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Globalization.Calendar": {
@@ -19895,7 +19895,7 @@
                     "LunarCalendar",
                     "LunisolarCalendar"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Globalization.CalendarWeekRule": {
@@ -19904,7 +19904,7 @@
                     "FirstFullWeek",
                     "FirstFourDayWeek"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Globalization.CompareInfo": {
@@ -20033,7 +20033,7 @@
                     "WindowsOnlyCultures",
                     "FrameworkCultures"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Globalization.DateTimeFormatInfo": {
@@ -20174,7 +20174,7 @@
                     "None",
                     "NativeNational"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Globalization.NumberFormatInfo": {
@@ -20492,7 +20492,7 @@
                     "HasThis",
                     "ExplicitThis"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Reflection.ConstructorInfo": {
@@ -20695,7 +20695,7 @@
                     "RTSpecialName",
                     "ReservedMask"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Reflection.EventInfo": {
@@ -20783,7 +20783,7 @@
                     "HasDefault",
                     "ReservedMask"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Reflection.FieldInfo": {
@@ -20906,7 +20906,7 @@
                     "DefaultConstructorConstraint",
                     "SpecialConstraintMask"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Reflection.ICustomAttributeProvider": {
@@ -20965,7 +20965,7 @@
                     "NestedType",
                     "All"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Reflection.MethodAttributes": {
@@ -20995,7 +20995,7 @@
                     "RequireSecObject",
                     "ReservedMask"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Reflection.MethodBase": {
@@ -21150,7 +21150,7 @@
                     "InternalCall",
                     "MaxMethodImplVal"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Reflection.MethodInfo": {
@@ -21358,7 +21358,7 @@
                     "Reserved4",
                     "ReservedMask"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Reflection.ParameterInfo": {
@@ -21442,7 +21442,7 @@
                     "Reserved4",
                     "ReservedMask"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Reflection.PropertyInfo": {
@@ -21544,7 +21544,7 @@
                     "BeforeFieldInit",
                     "CustomFormatMask"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Reflection.TypeInfo": {
@@ -21917,7 +21917,7 @@
                     "Explicit",
                     "Auto"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Runtime.InteropServices.StructLayoutAttribute": {
@@ -21966,7 +21966,7 @@
                     "Level1",
                     "Level2"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "System.Type": {
@@ -22274,14 +22274,14 @@
                     "PortalLicensesOverLimitFromDesk",
                     "SubscriptionExpired"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "WebCon.BPSCloud.Core.Errors.LoginError": {
                 "enum": [
                     "UserIdentifierNotFound"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "WebCon.BPSCloud.Core.PublicApi.Exceptions.ApiErrorResponse": {
@@ -22326,7 +22326,7 @@
                     "InvalidData",
                     "UnsupportedLicensingType"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "WebCon.BPSCloud.Core.PublicApi.Links.Link": {
@@ -23312,7 +23312,7 @@
                     "Widget",
                     "FreeForm"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             },
             "WebCon.WorkFlow.Enums.DataSourceColumnType": {
@@ -23329,7 +23329,7 @@
                     "String",
                     "Text"
                 ],
-                "type": "String",
+                "type": "string",
                 "format": "int32"
             }
         },
