@@ -1,5 +1,4 @@
-using module  .\ClassesWebcon.psm1
-
+using module .\Classes\API.psm1
 class WorkflowInformation {
     [System.Collections.Generic.List[WebconAssociatedFormType]]$FormTypes
     [System.Collections.Generic.List[WebconStep]]$Steps
@@ -12,7 +11,7 @@ class WorkflowInformation {
         $this.DBId = $dbId
         $this.WorkflowId = $workflowId
         $this.FormTypes = Get-WorkflowFormTypes  -dbId $dbId -workflowId $workflowId
-        $this.Steps = Get-WorkflowStepInformation -dbId $dbId -workflowId $workflowId
+        $this.Steps = Get-WorkflowStepInformation -dbId $dbId -workflowId $workflowId        
         foreach ($formType in $this.FormTypes) {
             foreach ($step in $this.Steps) {
                 $stepFormLayout = [WorkflowFormStepLayout]::new();
