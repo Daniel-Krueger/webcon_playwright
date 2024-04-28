@@ -614,7 +614,7 @@ function Add-TypeScriptField {
         }
         [void]$typeScript.AppendLine("new FieldDefinitions.$className(`"$($field.name)`", `"$($field.dbColumn.replace('WFD_',''))`",$value,{")
         # Options
-        [void]$typeScript.AppendLine("isRequired: $(($field.requiredness -eq [WebconRequired]::Optional).ToString().ToLower()),")
+        [void]$typeScript.AppendLine("isRequired: $(($field.requiredness -eq [WebconRequired]::Mandatory).ToString().ToLower()),")
         [void]$typeScript.AppendLine("editability: FieldDefinitions.FieldEditability.$($field.editability),")
         [void]$typeScript.AppendLine("visibility: FieldDefinitions.FieldVisibility.$($field.visibility),")
         [void]$typeScript.AppendLine("action: $($field.editability -eq [WebconEditable]::Editable ? 'FieldDefinitions.FieldActionType.SetAndCheck' : 'FieldDefinitions.FieldActionType.CheckOnly'),")

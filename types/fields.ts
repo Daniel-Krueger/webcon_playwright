@@ -1,6 +1,5 @@
 import { chromium, Browser, Page } from "playwright";
 import { test, expect, Locator } from "@playwright/test";
-import exp from "constants";
 import { error } from "console";
 
 declare const window: any;
@@ -92,8 +91,7 @@ export abstract class BaseField implements IField {
     this.visibility = options?.visibility ?? FieldVisibility.Visible;
     this.actionType = options?.action ?? FieldActionType.SetAndCheck;
   }
-
-  action = async function (page: Page) {
+  async action(page: Page) {
     switch (this.actionType) {
       case FieldActionType.CheckOnly:
         await this.checkValue(page);
@@ -104,8 +102,11 @@ export abstract class BaseField implements IField {
       default:
         throw "not implemented";
     }
-  };
-  checkValue = async function (page: Page) {
+  }
+  async checkValue(page: Page) {
+    if (this.visibility == FieldVisibility.Hidden) {
+      return;
+    }
     const elementLocator = page.locator(`#${this.column}`);
     let valueLocator: Locator;
     console.log(
@@ -120,17 +121,17 @@ export abstract class BaseField implements IField {
         await elementLocator.locator(".form-control-readonly").innerText
       ).toBe(this.value.toString());
     }
-  };
-  checkRequired = async function (page: Page) {
+  }
+  async checkRequired(page: Page) {
     if (this.isRequired) {
       await expect(
         page.locator(`#${this.column} .requiredAttribute`),
         `Field ${this.label} (${this.column}) is not marked as required.`
       ).toBeVisible({ timeout: 200 });
     }
-  };
+  }
   /** Sets the defined value and verifies, that the value is stored in the model. If the field is defined as required it's also checked whether this is true.*/
-  set = async function (page: Page) {
+  async set(page: Page) {    
     await this.checkRequired(page);
     const element = page.locator(this.locator);
     await element.fill(this.value);
@@ -140,7 +141,7 @@ export abstract class BaseField implements IField {
         return window.GetValue(columnName);
       }, this.column)
     ).toBe(this.value);
-  };
+  }
 }
 
 export class TextField extends BaseField {
@@ -164,7 +165,7 @@ export class NumberField extends BaseField {
     super(label, column, value, options);
     this.locator = `#${this.column} input`;
   }
-  override set = async function (page: Page) {
+  async set (page: Page) {
     await this.checkRequired(page);
     const element = page.locator(this.locator);
     const textValue = this.value?.toString();
@@ -201,7 +202,7 @@ export class ChooseFieldPopupSearch extends BaseField {
     this.locator = `#${this.column} button.picker-search-button`;
   }
 
-  override set = async function (page: Page) {
+  async set (page: Page) {
     await page.locator(this.locator).click();
     await page.locator(".picker-search__input").fill(this.value);
     await page.locator(".picker-search__input").press("Enter");

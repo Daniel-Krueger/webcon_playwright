@@ -10,7 +10,7 @@ export const data: IFormData = {
       "AttLong2",
       "My long text\nsome new line.",
       {
-        isRequired: true,
+        isRequired: false,
         editability: FieldDefinitions.FieldEditability.Editable,
         visibility: FieldDefinitions.FieldVisibility.Hidden,
         action: FieldDefinitions.FieldActionType.SetAndCheck,
@@ -19,7 +19,7 @@ export const data: IFormData = {
     new FieldDefinitions.TabPanelField("New tab panel", 1023, [
       new FieldDefinitions.TabField("General", 1026, [
         new FieldDefinitions.TextField("Title", "AttText1Glob", "Some title", {
-          isRequired: true,
+          isRequired: false,
           editability: FieldDefinitions.FieldEditability.Editable,
           visibility: FieldDefinitions.FieldVisibility.Visible,
           action: FieldDefinitions.FieldActionType.SetAndCheck,
@@ -29,7 +29,7 @@ export const data: IFormData = {
           "AttLong1",
           null,
           {
-            isRequired: true,
+            isRequired: false,
             editability: FieldDefinitions.FieldEditability.Editable,
             visibility: FieldDefinitions.FieldVisibility.Visible,
             action: FieldDefinitions.FieldActionType.SetAndCheck,
@@ -38,7 +38,7 @@ export const data: IFormData = {
       ]),
       new FieldDefinitions.TabField("Second tab", 1025, [
         new FieldDefinitions.NumberField("Input field", "AttInt1", 2.0, {
-          isRequired: true,
+          isRequired: false,
           editability: FieldDefinitions.FieldEditability.Editable,
           visibility: FieldDefinitions.FieldVisibility.Visible,
           action: FieldDefinitions.FieldActionType.SetAndCheck,
@@ -49,7 +49,7 @@ export const data: IFormData = {
             "AttInt2",
             4.0,
             {
-              isRequired: true,
+              isRequired: false,
               editability: FieldDefinitions.FieldEditability.ReadOnlyJS,
               visibility: FieldDefinitions.FieldVisibility.Visible,
               action: FieldDefinitions.FieldActionType.CheckOnly,
@@ -60,7 +60,7 @@ export const data: IFormData = {
             "AttInt3",
             6.0,
             {
-              isRequired: true,
+              isRequired: false,
               editability: FieldDefinitions.FieldEditability.ReadOnlyJS,
               visibility: FieldDefinitions.FieldVisibility.Visible,
               action: FieldDefinitions.FieldActionType.CheckOnly,
@@ -75,7 +75,7 @@ export const data: IFormData = {
         "AttChoose1",
         "Demo Two",
         {
-          isRequired: false,
+          isRequired: true,
           editability: FieldDefinitions.FieldEditability.Editable,
           visibility: FieldDefinitions.FieldVisibility.Visible,
           action: FieldDefinitions.FieldActionType.SetAndCheck,
