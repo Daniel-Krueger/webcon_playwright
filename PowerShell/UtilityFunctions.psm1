@@ -2,9 +2,42 @@ using module  .\MergedClasses.psm1
 
 $ErrorActionPreference = 'Inquire'
 
-#region WEBCON API functions
-# Configuration class
+function Assert-ImportExcelModule {
+    if (Get-Module -ListAvailable -Name ImportExcel) {
+        Write-Host "Module exists"
+    } 
+    else {
+        Install-Module -Name ImportExcel  -scope CurrentUser -Force
+    }
+    Import-Module -Name ImportExcel -Force
+}
 
+
+#region WEBCON API functions
+
+# Set's the global configuration information. Secret information are read from a file outside of the repository.
+function Set-WEBCONTargetInformation {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $false)]
+        [string]$filePath = "..\.auth\webconConfig.json"
+    )    
+    process {
+        Write-Host "Setting up WEBCON configuration"
+        $global:WEBCONConfig = New-Object WEBCONConfig
+        if (!(Test-Path $filePath) ) {
+            $defaultConfig = New-Object WEBCONConfig
+            ConvertTo-Json $defaultConfig
+            New-Item $filePath  -Value (ConvertTo-Json $defaultConfig)
+            $filePath = Resolve-Path $filePath 
+            explorer.exe $filePath 
+            $filePath | clip
+            Write-Error "The configuration file does not exist. Please update the information in file '$filePath'. It should have opened, but the path is also copied to the clipboard"
+        }
+        $customConfig = Get-Content -LiteralPath $filePath  -Encoding UTF8 | ConvertFrom-Json 
+        $global:WEBCONConfig.UpdateFromConfig($customConfig)    
+    }
+} 
 <#
 .SYNOPSIS
 Retrieves a access token using the configuration from global::WEBCONConfig and stores it in the global variable $Global::accessToken 
@@ -97,87 +130,6 @@ function Get-WorkflowFormTypes {
     }
 }
 
-
-<#
-.SYNOPSIS
-    Return the associated form types of the workflow
-.EXAMPLE
-using module .\ClassesWebcon.psm1
-Import-Module .\UtilityFunctions.psm1 -Force
-    $dbId = 14
-    $workflowId = 78  
-    Set-AccessToken
-       
-    $formTypes = Get-WorkflowFormTypes  -dbId $dbId -workflowId $workflowId
-    $steps = Get-WorkflowStepInformation -dbId $dbId -workflowId $workflowId
-    $stepId = $steps[0].id
-    $formTypeId = $formTypes[0].id
-#>
-function Get-FormLayout {
-    [CmdletBinding()]
-    param (
-        [Parameter()]
-        [int]
-        $dbId,
-        [Parameter()]
-        [int]
-        $stepId,
-        [Parameter()]
-        [int]
-        $formTypeId
-    )
-    begin {        
-        
-        
-    }
-    process {
-        $formLayoutResult = Invoke-AuthenticatedGetRequest -hostRelativeUri "/api/data/$($Global:WEBCONConfig.ApiVersion)/db/$($dbId)/formlayout?step=$stepId&formType=$formTypeId"           
-        #return [WebconFormLayout]::new($formLayoutResult)
-        return [WebconFormLayout]::new($formLayoutResult, $handleLayoutFields)                      
-    }
-
-}
-$handleLayoutFields = { param($json, $instance)
-    foreach ($jsonField in $json.fields) {
-        <#
-        $jsonField = $json.fields[0]
-        #>
-        if ($null -eq $jsonField.configuration ) {
-            continue
-        }
-        $field = $instance.fields | Where-Object { $_.id -eq $jsonField.id }
-        switch ($field.type) {
-            ([WebconFieldTypes]::Autocomplete) { $field.configuration = [WebconAutocompleteConfig]::new($jsonField.configuration) }
-            ([WebconFieldTypes]::Decimal) { $field.configuration = [WebconDecimalConfig]::new($jsonField.configuration) }
-            ([WebconFieldTypes]::ChoicePicker) { $field.configuration = [WebconDropdownConfig]::new($jsonField.configuration) }
-            ([WebconFieldTypes]::Int) { $field.configuration = [WebconIntegerConfig]::new($jsonField.configuration) }
-            ([WebconFieldTypes]::Multiline) { $field.configuration = [WebconMultilineConfig]::new($jsonField.configuration) }
-            ([WebconFieldTypes]::ChoicePicker) { $field.configuration = [WebconPickerConfig]::new($jsonField.configuration) }
-            ([WebconFieldTypes]::RatingScale) { $field.configuration = [WebconRatingScaleConfig]::new($jsonField.configuration) }
-            ([WebconFieldTypes]::SurveyChoose) { $field.configuration = [WebconSurveyChooseConfig]::new($jsonField.configuration) }
-        }
-    }
-
-}
-function Invoke-AuthenticatedGetRequest {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]
-        $hostRelativeUri
-    )
-    $uri = "$($global:WEBCONConfig.Hostname)$hostRelativeUri"
-    Write-Host "Executing request against uri: $uri"    
-    Return Invoke-RestMethod `
-        -Method Get `
-        -Uri  $uri `
-        -ContentType "application/json" `
-        -Headers @{"accept" = "application/json"; "Authorization" = "Bearer $($Global:accessToken) " } `
-
-}
-
-
-
 <#
 .SYNOPSIS
     Return the step information for the given workflow and database including the type of the step.
@@ -218,7 +170,7 @@ function Get-WorkflowStepInformation {
 .SYNOPSIS
     Return the associated form types of the workflow
 .EXAMPLE
-    Get-WorkflowStepInformation -dbId 14 -workflowId 78
+    Get-WorkflowFormTypes -dbId 14 -workflowId 78
 #>
 function Get-WorkflowFormTypes {
     [CmdletBinding()]
@@ -249,13 +201,12 @@ function Get-WorkflowFormTypes {
     }
 }
 
-
 <#
 .SYNOPSIS
     Return the associated form types of the workflow
 .EXAMPLE
-using module .\ClassesWebcon.psm1
-Import-Module .\UtilityFunctions.psm1 -Force
+    using module .\MergedClasases.psm1
+    Import-Module .\UtilityFunctions.psm1 -Force
     $dbId = 14
     $workflowId = 78  
     Set-AccessToken
@@ -264,7 +215,9 @@ Import-Module .\UtilityFunctions.psm1 -Force
     $steps = Get-WorkflowStepInformation -dbId $dbId -workflowId $workflowId
     $stepId = $steps[0].id
     $formTypeId = $formTypes[0].id
+    Get-WorkflowFormTypes -dbId $dbId -stepId $stepId -formTypeId $formTypeId
 #>
+
 function Get-FormLayout {
     [CmdletBinding()]
     param (
@@ -289,6 +242,7 @@ function Get-FormLayout {
     }
 
 }
+<# Passed to the class instances to create the correct field based on the configuration  #>
 $handleLayoutFields = { param($json, $instance)
     foreach ($jsonField in $json.fields) {
         <#
@@ -311,6 +265,12 @@ $handleLayoutFields = { param($json, $instance)
     }
 
 }
+<#
+.SYNOPSIS
+    Processes the get request by adding the necessary headers like authentication
+.EXAMPLE
+    Invoke-AuthenticatedGetRequest -hostRelativeUri "/api/data/$($Global:WEBCONConfig.ApiVersion)/db/$($dbId)/workflows/$($workflowId)/steps"  
+#>
 function Invoke-AuthenticatedGetRequest {
     [CmdletBinding()]
     param (
@@ -329,11 +289,10 @@ function Invoke-AuthenticatedGetRequest {
 }
 
 
+
 #endregion
 
 #region Generated form data 
-
-
 function Export-FormData {
     
     [CmdletBinding()]
@@ -480,10 +439,10 @@ function Add-TypeScriptContainerField {
     }
     process {
         switch ($field.type) {
-            {$_ -eq [WebconFieldTypes]::Tab } { $className = 'TabField'; break }
-            {$_ -eq [WebconFieldTypes]::TabPanel } { $className = 'TabPanelField'; break  }
-            {$_ -eq [WebconFieldTypes]::AttributesGroup } { $className = 'GroupField'; break  }
-            else{
+            { $_ -eq [WebconFieldTypes]::Tab } { $className = 'TabField'; break }
+            { $_ -eq [WebconFieldTypes]::TabPanel } { $className = 'TabPanelField'; break }
+            { $_ -eq [WebconFieldTypes]::AttributesGroup } { $className = 'GroupField'; break }
+            else {
                 Write-Host "Type '$_' of field $($field.name)($($field.dbColumn)) is not handled." -ForegroundColor DarkRed
             }
         }
@@ -526,12 +485,12 @@ function Add-TypeScriptField {
     }
     process {
         switch ($field.type) {
-            {$_ -eq [WebconFieldTypes]::SingleLine } { $className = 'TextField'; break  }
-            {$_ -eq [WebconFieldTypes]::Multiline } { $className = 'MultiLineTextField'; break  }
-            {$_ -eq [WebconFieldTypes]::Int } { $className = 'NumberField'; break  }
-            {$_ -eq [WebconFieldTypes]::Decimal } { $className = 'NumberField' ; break }
-            {$_ -eq [WebconFieldTypes]::People } { $className = 'ChooseFieldPopupSearch' ; break }
-            default{
+            { $_ -eq [WebconFieldTypes]::SingleLine } { $className = 'TextField'; break }
+            { $_ -eq [WebconFieldTypes]::Multiline } { $className = 'MultiLineTextField'; break }
+            { $_ -eq [WebconFieldTypes]::Int } { $className = 'NumberField'; break }
+            { $_ -eq [WebconFieldTypes]::Decimal } { $className = 'NumberField' ; break }
+            { $_ -eq [WebconFieldTypes]::People } { $className = 'ChooseFieldPopupSearch' ; break }
+            default {
                 Write-Host "Type '$_' of field $($field.name)($($field.dbColumn)) is not handled." -ForegroundColor DarkRed
             }
         }
@@ -547,31 +506,7 @@ function Add-TypeScriptField {
         
     }
 }
-
-# Set's the global configuration information. Secret information are read from a file outside of the repository.
-function Set-WEBCONTargetInformation {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $false)]
-        [string]$filePath = "..\.auth\webconConfig.json"
-    )    
-    process {
-        Write-Host "Setting up WEBCON configuration"
-        $global:WEBCONConfig = New-Object WEBCONConfig
-        if (!(Test-Path $filePath) ) {
-            $defaultConfig = New-Object WEBCONConfig
-            ConvertTo-Json $defaultConfig
-            New-Item $filePath  -Value (ConvertTo-Json $defaultConfig)
-            $filePath = Resolve-Path $filePath 
-            explorer.exe $filePath 
-            $filePath | clip
-            Write-Error "The configuration file does not exist. Please update the information in file '$filePath'. It should have opened, but the path is also copied to the clipboard"
-        }
-        $customConfig = Get-Content -LiteralPath $filePath  -Encoding UTF8 | ConvertFrom-Json 
-        $global:WEBCONConfig.UpdateFromConfig($customConfig)    
-    }
-} 
-
+#endregion
 function Remove-ForbiddenCharacters {
     param (
         [string]$inputString
