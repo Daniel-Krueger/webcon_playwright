@@ -4,14 +4,25 @@ $ErrorActionPreference = 'Inquire'
 
 function Assert-ImportExcelModule {
     if (Get-Module -ListAvailable -Name ImportExcel) {
-        Write-Host "Module exists"
+        
     } 
     else {
+        Write-Host "Import excel was not yet installed, going to install it"
         Install-Module -Name ImportExcel  -scope CurrentUser -Force
     }
     Import-Module -Name ImportExcel -Force
 }
 
+$excelConfig = @{
+    "fieldNameRow"        = 1 
+    "typeRow"             = 2
+    "columNameRow"        = 3
+    "idRow"               = 4
+    "guidRow"             = 5
+    "fieldStartingColumn" = 2
+    "stepStartingRow"     = 6 
+    "fieldInfoSheet"      = "FieldInformation" 
+}
 
 #region WEBCON API functions
 
@@ -293,6 +304,17 @@ function Invoke-AuthenticatedGetRequest {
 #endregion
 
 #region Generated form data 
+<#
+.EXAMPLE
+Import-Module .\utilityFunctions.psm1 -ErrorAction Stop
+
+$dbId = 14
+$workflowId = 78
+$targetFolder = "..\e2e\automatedUi"
+$inputDataFilePath = "..\e2e\input_20240428.xlsx"
+$workflowInformation = [WorkflowInformation]::new($dbId, $workflowId)
+Export-FormData -workflowInformation $workflowInformation -targetFolderPath $targetFolder -inputDataFilePath $inputDataFilePath 
+#>
 function Export-FormData {
     
     [CmdletBinding()]
@@ -302,18 +324,30 @@ function Export-FormData {
         $workflowInformation,
         [Parameter(Mandatory)]
         [string]
-        $targetFolderPath
+        $targetFolderPath,
+        [Parameter()]
+        [string]
+        $inputDataFilePath
     )
     begin {
-        $targetFolder = new-item -Path $targetFolderPath -ItemType Directory -Force
+        
+        $addExcelData = $false -eq [string]::IsNullOrWhiteSpace($inputDataFilePath)
+        if ($addExcelData) {          
+            $excelInformation = Get-ExcelInformation -inputDataFilePath $inputDataFilePath            
+        }
+        else {
+            $excelInformation = $null
+        }
     }
     process {
+      
+        
         foreach ($formStepLayout in $workflowInformation.FormStepLayout) {
             <# 
             $formStepLayout = $workflowInformation.FormStepLayout[0]
             #>
             $formTypeFolder = New-item -path "$targetFolderPath\$(Remove-ForbiddenCharacters $formStepLayout.FormType.name)\$(Remove-ForbiddenCharacters $formStepLayout.Step.name)" -ItemType Directory -Force
-            $formData = New-FormData -formStepLayout $formStepLayout
+            $formData = New-FormData -formStepLayout $formStepLayout -excelInformation $excelInformation
             $dataFileLocation = "$($formTypeFolder.FullName)\formData.ts"
             Write-Host "Exporting form data to: $dataFileLocation"
             $formData.ToString() | Out-File -LiteralPath $dataFileLocation            
@@ -321,6 +355,60 @@ function Export-FormData {
     }
     end {
                 
+    }
+}
+
+function Get-ExcelInformation {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$inputDataFilePath,        
+        [Parameter()]
+        [int]       
+        $maxFields = 300,
+        [Parameter()]
+        [int]       
+        $maxSteps = 100
+    )
+    begin {
+        Assert-ImportExcelModule
+        $excelFile = Open-ExcelPackage -Path $inputDataFilePath -KillExcel
+        $fieldInformation = $excelFile.Workbook.Worksheets[$excelConfig.fieldInfoSheet]
+       
+      
+       
+    }
+    process {
+        $currentColumn = $excelConfig.fieldStartingColumn
+        $fieldColumnMap = [System.Collections.Generic.Dictionary[int, int]]::new()
+        do {
+            $fieldId = $fieldInformation.Cells[$excelConfig.idRow, $currentColumn].value
+            $break = $null -eq $fieldId
+            if ($false -eq $break -and $currentColumn -gt $maxFields ) {
+                throw "The current column number exceeds the maximum fields (columns), which are set to $maxFields"
+            }
+            if ($false -eq $break) {
+                [void]$fieldColumnMap.add($fieldId, $currentColumn)
+            }
+            $currentColumn++
+        } while ($break -eq $false)
+
+        $currentStep = $excelConfig.stepStartingRow
+        $stepRowMap = [System.Collections.Generic.Dictionary[string, int]]::new()
+        do {
+            $stepName = $fieldInformation.Cells[$currentStep, 1].value
+            $break = $null -eq $stepName
+            if ($false -eq $break -and $currentStep -gt $maxSteps ) {
+                throw "The current row exceeds the maximum steps (rows), which are set to $maxSteps"
+            }
+            if ($false -eq $break) {
+                [void]$stepRowMap.add($stepName, $currentStep)
+            }
+            $currentStep++
+        } while ($break -eq $false)
+    }
+    end {
+        return @{ "fieldColumnMap" = $fieldColumnMap; "stepRowMap" = $stepRowMap; "fieldInformation" = $fieldInformation }
     }
 }
 <#
@@ -340,11 +428,16 @@ function New-FormData {
     param (
         [Parameter(Mandatory)]
         [WorkflowFormStepLayout]
-        $formStepLayout
+        $formStepLayout,
+        [Parameter()]        
+        $excelInformation
     )
     begin {
         $typeScript = [System.Text.StringBuilder]::new()
-        
+        if ($null -ne $excelInformation) {
+            $currentExcelRow = $excelInformation.stepRowMap[$formStepLayout.Step.name]
+        }
+           
     }
     process {
         [void]$typeScript.AppendLine("import * as FieldDefinitions from `"types/fields`"");
@@ -360,7 +453,7 @@ function New-FormData {
             <#
             $currentHierachy = $rootHiearchy[1]
             #>
-            Add-TypeScriptFormData -currentHierachy ([FieldHierachy]$currentHierachy) -typeScript $typeScript
+            Add-TypeScriptFormData -currentHierachy ([FieldHierachy]$currentHierachy) -typeScript $typeScript -excelInformation $excelInformation -currentExcelRow $currentExcelRow
         }
         [void]$typeScript.AppendLine("]}")
     }
@@ -390,7 +483,12 @@ function Add-TypeScriptFormData {
         $currentHierachy,
         [Parameter(Mandatory)]
         [System.Text.StringBuilder]
-        $typeScript
+        $typeScript,
+        [Parameter()]
+        $excelInformation,
+        [Parameter()]
+        [int]
+        $currentExcelRow
     )
     begin {
         $field = $currentHierachy.parentField
@@ -398,9 +496,11 @@ function Add-TypeScriptFormData {
     process {
         switch ($field.type) {
             { $_ -in [WebconFieldTypes]::TabPanel, [WebconFieldTypes]::Tab, [WebconFieldTypes]::AttributesGroup } {
-                Add-TypeScriptContainerField -currentHierachy $currentHierachy -typeScript $typeScript
+                Add-TypeScriptContainerField -currentHierachy $currentHierachy -typeScript $typeScript -excelInformation $excelInformation -currentExcelRow $currentExcelRow
             }
-            Default { Add-TypeScriptField -field $field -typeScript $typeScript }
+            Default {
+                Add-TypeScriptField -field $field -typeScript $typeScript  -excelInformation $excelInformation -currentExcelRow $currentExcelRow
+            }
         }
     }
     end {
@@ -431,10 +531,15 @@ function Add-TypeScriptContainerField {
         $currentHierachy,
         [Parameter(Mandatory)]
         [System.Text.StringBuilder]
-        $typeScript       
+        $typeScript,
+        [Parameter()]
+        $excelInformation,
+        [Parameter()]
+        [int]
+        $currentExcelRow   
     )
     begin {
-        $field = $currentHierachy.parentField     
+        $field = $currentHierachy.parentField
         $className = "FieldTypeNotHandled"
     }
     process {
@@ -447,7 +552,7 @@ function Add-TypeScriptContainerField {
             }
         }
         [void]$typeScript.AppendLine("new FieldDefinitions.$className(`"$($field.name)`", $($field.id), [")
-        $currentHierachy.children | ForEach-Object { Add-TypeScriptFormData -currentHierachy $_ -typeScript $typeScript }
+        $currentHierachy.children | ForEach-Object { Add-TypeScriptFormData -currentHierachy $_ -typeScript $typeScript -excelInformation $excelInformation -currentExcelRow $currentExcelRow }
         [void]$typeScript.AppendLine("]),")   
     }
     end {
@@ -478,12 +583,25 @@ function Add-TypeScriptField {
         $field,
         [Parameter(Mandatory)]
         [System.Text.StringBuilder]
-        $typeScript
+        $typeScript,
+        [Parameter()]
+        $excelInformation
+        ,
+        [Parameter()]
+        [int]
+        $currentExcelRow
     )
     begin {
         $className = "FieldTypeNotHandled"
     }
-    process {
+    process {        
+        if ($null -eq $excelInformation) {
+            $value = "TBD_VALUE"
+        } 
+        else {
+            $value = $excelInformation.fieldInformation.Cells[$currentExcelRow, $excelInformation.fieldColumnMap[$field.id]].value
+            $value = ConvertTo-Json $value
+        }
         switch ($field.type) {
             { $_ -eq [WebconFieldTypes]::SingleLine } { $className = 'TextField'; break }
             { $_ -eq [WebconFieldTypes]::Multiline } { $className = 'MultiLineTextField'; break }
@@ -494,7 +612,7 @@ function Add-TypeScriptField {
                 Write-Host "Type '$_' of field $($field.name)($($field.dbColumn)) is not handled." -ForegroundColor DarkRed
             }
         }
-        [void]$typeScript.AppendLine("new FieldDefinitions.$className(`"$($field.name)`", `"$($field.dbColumn.replace('WFD_',''))`",'TBD_VALUE',{")
+        [void]$typeScript.AppendLine("new FieldDefinitions.$className(`"$($field.name)`", `"$($field.dbColumn.replace('WFD_',''))`",$value,{")
         # Options
         [void]$typeScript.AppendLine("isRequired: $(($field.requiredness -eq [WebconRequired]::Optional).ToString().ToLower()),")
         [void]$typeScript.AppendLine("editability: FieldDefinitions.FieldEditability.$($field.editability),")
@@ -507,6 +625,143 @@ function Add-TypeScriptField {
     }
 }
 #endregion
+
+#region Create excel input file
+
+<#
+.SYNOPSIS
+Will create a new input file for the provided workflow information
+#
+
+.DESCRIPTION
+This function will remove all workflow instances lised in the excel file. 
+It's expected that this file has only one worksheet and that the first row contains the header information.
+
+The API application  must have business administrator permissions for this.
+
+The result will be written into the column right to the instanceIdColumn
+.PARAMETER workflowInformation
+The retrieved workflow information
+
+.PARAMETER targetFile
+The target file where the excel will be saved.
+
+.PARAMETER overwrite
+Default value is $false
+
+.PARAMETER -showFile
+Will display the file in Excel. Default value is $true
+
+.EXAMPLE
+$global:ErrorActionPreference = "stop"
+Import-Module  -Name ".\UtilityFunctions.psm1" -Force
+
+$dbId = 14
+$workflowId = 78
+$targetFile = "..\e2e\automatedUi\input.xlsx"
+$workflowInformation = [WorkflowInformation]::new($dbId, $workflowId)
+
+New-ExcelInputFile -workflowInformation $workflowInformation -targetFile $targetFile -overwrite $true -showFile $true
+
+#>
+function New-ExcelInputFile {
+    [CmdletBinding()]
+    param (        
+        [Parameter(Mandatory)]
+        [WorkflowInformation]
+        $workflowInformation,
+        [Parameter(Mandatory)]
+        [string]
+        $targetFile,
+        [Parameter()]
+        [bool]
+        $overwrite = $false
+        ,
+        [Parameter()]
+        [bool]
+        $showFile = $true
+    )    
+    begin {
+        
+        Assert-ImportExcelModule
+        if ((Test-Path -Path $targetFile)) {
+            if ($overwrite -eq $false) {
+                $key = Read-Host "The file already exists, it will be overwritten, if you continue. Press C and Enter to continue"
+                if ($key -ne 'C') { exit }
+            }
+            Remove-Item $targetFile
+        }
+        
+        $excel = Open-ExcelPackage -Path $targetFile -Create    
+        $fieldInformationSheet = Add-WorkSheet -ExcelPackage $excel -WorksheetName $excelConfig.fieldInfoSheet
+       
+        $fieldsToSkip = @(           
+            [WebconFieldTypes]::Unspecified,
+            [WebconFieldTypes]::Comments,
+            [WebconFieldTypes]::AttributesGroup,
+            [WebconFieldTypes]::Tab,
+            [WebconFieldTypes]::TabPanel)
+        $stepsToSkip = @(
+            [WebconStepTypes]::SystemWaitingForScan,
+            [WebconStepTypes]::SystemWaitingForOtherWorkFlow,
+            [WebconStepTypes]::FlowControl,
+            [WebconStepTypes]::SystemWaitingForTextLayer,
+            [WebconStepTypes]::SystemWaitingForOcrAi,
+            [WebconStepTypes]::SystemWaitingForOcrAiLearn,
+            [WebconStepTypes]::SystemStart
+
+        )
+        $fieldInformationSheet.DefaultColWidth = 15
+        $fieldInformationSheet.Cells[$excelConfig.fieldNameRow, 1].Value = "Name"
+        $fieldInformationSheet.Cells[$excelConfig.typeRow, 1].Value = "Type"
+        $fieldInformationSheet.Cells[$excelConfig.columNameRow, 1].Value = "DB Column"
+        $fieldInformationSheet.Cells[$excelConfig.idRow, 1].Value = "Id"
+        $fieldInformationSheet.Cells[$excelConfig.guidRow, 1].Value = "GUID"            
+    }
+    process {
+        $fieldColumn = $excelConfig.fieldStartingColumn
+        foreach ($field in $workflowInformation.FormStepLayout[0].Layout.fields) {
+            <#
+            $field = $workflowInformation.FormStepLayout[0].Layout.fields[1]
+            #>
+            if ($field.type -in $fieldsToSkip) { continue }
+            
+            $fieldInformationSheet.Cells[$excelConfig.fieldNameRow, $fieldColumn].Value = $field.name
+            $fieldInformationSheet.Cells[$excelConfig.typeRow, $fieldColumn].Value = $field.type
+            $fieldInformationSheet.Cells[$excelConfig.columNameRow, $fieldColumn].Value = $field.dbColumn
+            $fieldInformationSheet.Cells[$excelConfig.idRow, $fieldColumn].Value = $field.id
+            $fieldInformationSheet.Cells[$excelConfig.guidRow, $fieldColumn].Value = $field.guid
+            $fieldColumn ++;
+        }
+        
+        $steprow = $excelConfig.stepStartingRow
+        foreach ($step in $workflowInformation.Steps) {
+            <#
+            $step = $workflowInformation.Steps[0]
+            #>
+            if ($step.type -in $stepsToSkip) { continue }
+            $fieldInformationSheet.Cells[$steprow, 1].Value = $step.name
+            $steprow ++;
+        }
+    }
+    end {
+        
+        $fieldInformationSheet.Row($excelConfig.columNameRow).Hidden = $true
+        $fieldInformationSheet.Row($excelConfig.idRow).Hidden = $true
+        $fieldInformationSheet.Row($excelConfig.guidRow).Hidden = $true
+        $fieldinformationSheet.View.FreezePanes($excelConfig.stepStartingRow, 2)
+        $excel.Save()
+        
+        if ($showFile) {
+            . $targetFile
+        }
+        
+    }
+}
+
+#endregion
+
+
 function Remove-ForbiddenCharacters {
     param (
         [string]$inputString
