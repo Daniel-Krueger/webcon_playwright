@@ -1,5 +1,4 @@
-# using module  .\ClassesWebcon.psm1
-# using module  .\ClassesFormDataGeneration.psm1
+using module  .\MergedClasses.psm1
 
 $ErrorActionPreference = 'Inquire'
 
@@ -411,7 +410,19 @@ function New-FormData {
     }
 }
 
+<#
+.EXAMPLE
 
+Import-Module .\UtilityFunctions.psm1 -Force
+$dbId = 14
+$workflowId = 78
+$workflowInformation = [WorkflowInformation]::new($dbId, $workflowId)
+$formStepLayout = $workflowInformation.FormStepLayout[0]
+$rootHiearchy = $formStepLayout.GetFieldHierarchy()
+$currentHierachy = $rootHiearchy[2]
+$typeScript = [System.Text.StringBuilder]::new()
+Add-TypeScriptFormData  -currentHierachy $currentHierachy -typeScript $typeScript
+#>
 function Add-TypeScriptFormData {
     [CmdletBinding()]
     param (
@@ -438,6 +449,21 @@ function Add-TypeScriptFormData {
     }
 }
 
+
+<#
+.EXAMPLE
+
+Import-Module .\UtilityFunctions.psm1 -Force
+$dbId = 14
+$workflowId = 78
+$workflowInformation = [WorkflowInformation]::new($dbId, $workflowId)
+$formStepLayout = $workflowInformation.FormStepLayout[0]
+$rootHiearchy = $formStepLayout.GetFieldHierarchy()
+$currentHierachy = $rootHiearchy[2]
+$typeScript = [System.Text.StringBuilder]::new()
+Add-TypeScriptContainerField  -currentHierachy $currentHierachy -typeScript $typeScript
+#>
+
 function Add-TypeScriptContainerField {
     [CmdletBinding()]
     param (
@@ -457,7 +483,9 @@ function Add-TypeScriptContainerField {
             {$_ -eq [WebconFieldTypes]::Tab } { $className = 'TabField'; break }
             {$_ -eq [WebconFieldTypes]::TabPanel } { $className = 'TabPanelField'; break  }
             {$_ -eq [WebconFieldTypes]::AttributesGroup } { $className = 'GroupField'; break  }
-
+            else{
+                Write-Host "Type '$_' of field $($field.name)($($field.dbColumn)) is not handled." -ForegroundColor DarkRed
+            }
         }
         [void]$typeScript.AppendLine("new FieldDefinitions.$className(`"$($field.name)`", $($field.id), [")
         $currentHierachy.children | ForEach-Object { Add-TypeScriptFormData -currentHierachy $_ -typeScript $typeScript }
@@ -468,6 +496,21 @@ function Add-TypeScriptContainerField {
     }
 }
 
+
+<#
+.EXAMPLE
+
+Import-Module .\UtilityFunctions.psm1 -Force
+$dbId = 14
+$workflowId = 78
+$workflowInformation = [WorkflowInformation]::new($dbId, $workflowId)
+$formStepLayout = $workflowInformation.FormStepLayout[0]
+$rootHiearchy = $formStepLayout.GetFieldHierarchy()
+$currentHierachy = $rootHiearchy[2]
+$typeScript = [System.Text.StringBuilder]::new()
+$field = $currentHierachy.children[0].parentField
+Add-TypeScriptField -field $field -typeScript $typeScript
+#>
 function Add-TypeScriptField {
     [CmdletBinding()]
     param (
@@ -479,7 +522,7 @@ function Add-TypeScriptField {
         $typeScript
     )
     begin {
-        $field = $currentHierachy.parentField
+        $className = "FieldTypeNotHandled"
     }
     process {
         switch ($field.type) {
@@ -487,6 +530,10 @@ function Add-TypeScriptField {
             {$_ -eq [WebconFieldTypes]::Multiline } { $className = 'MultiLineTextField'; break  }
             {$_ -eq [WebconFieldTypes]::Int } { $className = 'NumberField'; break  }
             {$_ -eq [WebconFieldTypes]::Decimal } { $className = 'NumberField' ; break }
+            {$_ -eq [WebconFieldTypes]::People } { $className = 'ChooseFieldPopupSearch' ; break }
+            default{
+                Write-Host "Type '$_' of field $($field.name)($($field.dbColumn)) is not handled." -ForegroundColor DarkRed
+            }
         }
         [void]$typeScript.AppendLine("new FieldDefinitions.$className(`"$($field.name)`", `"$($field.dbColumn.replace('WFD_',''))`",'TBD_VALUE',{")
         # Options

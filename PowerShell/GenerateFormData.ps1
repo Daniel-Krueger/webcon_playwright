@@ -1,5 +1,4 @@
-using module  .\ClassesWebcon.psm1
-using module  .\ClassesFormDataGeneration.psm1
+using module  .\MergedClasses.psm1
 
 #Import-module .\PowerShell\WebconClasses.psm1
 #Import-module .\PowerShell\FormDataGenerationClasses.psm1
@@ -7,8 +6,8 @@ $currentDirectory = Get-Item -Path .
 if ($currentDirectory.Name -ne "PowerShell") {
     Set-Location .\PowerShell
 }
-Import-Module .\UtilityFunctions.psm1 -Force
-# 
+Import-Module .\utilityFunctions.psm1 -ErrorAction Stop
+
 $dbId = 14
 $workflowId = 78
 $targetFolder = "..\e2e\automatedUi"
