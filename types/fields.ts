@@ -7,6 +7,7 @@ declare const window: any;
 export enum FieldActionType {
   SetAndCheck,
   CheckOnly,
+  None,
 }
 
 export enum FieldEditability {
@@ -99,14 +100,13 @@ export abstract class BaseField implements IField {
       case FieldActionType.SetAndCheck:
         await this.set(page);
         break;
+      case FieldActionType.None:
+        break;
       default:
         throw "not implemented";
     }
   }
   async checkValue(page: Page) {
-    if (this.visibility == FieldVisibility.Hidden) {
-      return;
-    }
     const elementLocator = page.locator(`#${this.column}`);
     let valueLocator: Locator;
     console.log(
@@ -118,7 +118,7 @@ export abstract class BaseField implements IField {
       );
     } else {
       expect(
-        await elementLocator.locator(".form-control-readonly").innerText
+        await elementLocator.locator(".form-control-readonly").innerText()
       ).toBe(this.value.toString());
     }
   }
@@ -131,7 +131,7 @@ export abstract class BaseField implements IField {
     }
   }
   /** Sets the defined value and verifies, that the value is stored in the model. If the field is defined as required it's also checked whether this is true.*/
-  async set(page: Page) {    
+  async set(page: Page) {
     await this.checkRequired(page);
     const element = page.locator(this.locator);
     await element.fill(this.value);
@@ -165,7 +165,7 @@ export class NumberField extends BaseField {
     super(label, column, value, options);
     this.locator = `#${this.column} input`;
   }
-  async set (page: Page) {
+  async set(page: Page) {
     await this.checkRequired(page);
     const element = page.locator(this.locator);
     const textValue = this.value?.toString();
@@ -176,7 +176,7 @@ export class NumberField extends BaseField {
         return window.GetValue(columnName);
       }, this.column)
     ).toBe(textValue);
-  };
+  }
 }
 
 export class MultiLineTextField extends BaseField {
@@ -202,7 +202,7 @@ export class ChooseFieldPopupSearch extends BaseField {
     this.locator = `#${this.column} button.picker-search-button`;
   }
 
-  async set (page: Page) {
+  async set(page: Page) {
     await page.locator(this.locator).click();
     await page.locator(".picker-search__input").fill(this.value);
     await page.locator(".picker-search__input").press("Enter");
@@ -213,5 +213,5 @@ export class ChooseFieldPopupSearch extends BaseField {
         return window.GetValue(columnName);
       }, this.column)
     ).toMatch(regEx);
-  };
+  }
 }

@@ -443,8 +443,13 @@ function New-FormData {
         [void]$typeScript.AppendLine("import * as FieldDefinitions from `"types/fields`"");
         [void]$typeScript.AppendLine("import { IFormData } from `"types/formData`"");
         [void]$typeScript.AppendLine();
-        [void]$typeScript.AppendLine("export const data: IFormData = {");
-        $formStepLayout.Layout.paths | ForEach-Object { [void]$typeScript.AppendLine("// pathId: $($_.id), // $($_.name) path visibility: $($_.visibility)") }
+        [void]$typeScript.AppendLine("export const data: IFormData = {");        
+        $formStepLayout.Layout.paths | ForEach-Object {             
+            [void]$typeScript.AppendLine("// pathId: $($_.id), // $($_.name) path visibility: $($_.visibility)") 
+        }
+        if ($formStepLayout.Step.type -in @([WebconStepTypes]::FinishPositive, [WebconStepTypes]::FinishNegative)) {
+            [void]$typeScript.AppendLine(" pathId: 0,")
+        }
        
         [void]$typeScript.AppendLine("currentStepId: $($formStepLayout.Step.id), // $($formStepLayout.Step.name)")
         [void]$typeScript.AppendLine("controls: [")
@@ -617,7 +622,11 @@ function Add-TypeScriptField {
         [void]$typeScript.AppendLine("isRequired: $(($field.requiredness -eq [WebconRequired]::Mandatory).ToString().ToLower()),")
         [void]$typeScript.AppendLine("editability: FieldDefinitions.FieldEditability.$($field.editability),")
         [void]$typeScript.AppendLine("visibility: FieldDefinitions.FieldVisibility.$($field.visibility),")
-        [void]$typeScript.AppendLine("action: $($field.editability -eq [WebconEditable]::Editable ? 'FieldDefinitions.FieldActionType.SetAndCheck' : 'FieldDefinitions.FieldActionType.CheckOnly'),")
+        $action = "FieldDefinitions.FieldActionType.None"
+        if ($field.visibility -ne [WebconVisible]::Hidden) {
+            $action = $field.editability -eq [WebconEditable]::Editable ? 'FieldDefinitions.FieldActionType.SetAndCheck' : 'FieldDefinitions.FieldActionType.CheckOnly'
+        }
+        [void]$typeScript.AppendLine("action: $action,")
         [void]$typeScript.AppendLine("}),")
     }
     end {

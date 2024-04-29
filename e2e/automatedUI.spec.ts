@@ -15,7 +15,7 @@ import { data as approvedData } from "./automatedUI/Automated UI/Approved/formDa
 test.describe.serial("Submit and approve", () => {
   let signature: string;
   // Element id to us, in case a specific test should be used/debugged.
-  let wfElementId: number = 2290;
+  let wfElementId: number = 2304;
 
   test("Submit workflow as user 1", async ({ browser }) => {
     // Target url

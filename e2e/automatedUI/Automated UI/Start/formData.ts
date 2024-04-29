@@ -13,7 +13,7 @@ export const data: IFormData = {
         isRequired: false,
         editability: FieldDefinitions.FieldEditability.Editable,
         visibility: FieldDefinitions.FieldVisibility.Hidden,
-        action: FieldDefinitions.FieldActionType.SetAndCheck,
+        action: FieldDefinitions.FieldActionType.None,
       }
     ),
     new FieldDefinitions.TabPanelField("New tab panel", 1023, [
