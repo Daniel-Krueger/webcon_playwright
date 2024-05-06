@@ -8,7 +8,7 @@ Import-Module .\utilityFunctions.psm1 -force  -ErrorAction Stop
 
 $dbId = 14
 $workflowId = 78
-$targetFile = "..\e2e\input.xlsx"
+$targetFile = "..\e2e\input_20240506.xlsx"
 $workflowInformation = [WorkflowInformation]::new($dbId, $workflowId)
 
 New-ExcelInputFile -workflowInformation $workflowInformation -targetFile $targetFile -overwrite $false -showFile $true

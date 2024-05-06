@@ -9,7 +9,7 @@ export const data: IFormData = {
     new FieldDefinitions.MultiLineTextField(
       "Decision",
       "AttLong2",
-      "My long text\nsome new line.",
+      "Yes, it's approved.",
       {
         isRequired: true,
         editability: FieldDefinitions.FieldEditability.ReadOnly,
@@ -28,7 +28,7 @@ export const data: IFormData = {
         new FieldDefinitions.MultiLineTextField(
           "Description",
           "AttLong1",
-          "Yes, it's approved.",
+          "My long text\nsome new line.",
           {
             isRequired: false,
             editability: FieldDefinitions.FieldEditability.ReadOnly,

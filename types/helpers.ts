@@ -1,6 +1,13 @@
 import { chromium, Browser, Page } from "playwright";
 import { test, expect } from "@playwright/test";
-import { BaseField, GroupField, IField, IFormData, TabField } from "./fields";
+import {
+  BaseField,
+  GroupField,
+  IField,
+  IFormData,
+  TabField,
+  TabPanelField,
+} from "./fields";
 import { EnrichedFormData } from "./formData";
 import { group } from "console";
 
@@ -34,21 +41,37 @@ export async function showDetailsInfoTab(page: Page) {
 
 export async function setAndCheckControls(page: Page, controls: IField[]) {
   for (const control of controls) {
-    if (control instanceof TabField) {
-      // Activate the tab and process all controls.
-      await page
-        .locator(
-          "ul:not(.tab-panel__header__hidden-content) " + control.locator
-        )
-        .click();
-      await setAndCheckControls(page, control.controls);
-    } else if (control instanceof GroupField) {      
-      if ((await page.locator(control.locator + "children").innerHTML()) == '') {
-        await page.locator(control.locator + " span").click();
-      }      
-      await setAndCheckControls(page, control.controls);
-    } else if (control instanceof BaseField) {
-      await control.action(page);
+    switch (true) {
+      case control instanceof TabPanelField:
+        await setAndCheckControls(page, control.controls);
+        break;
+      case control instanceof TabField:
+        // Activate the tab and process all controls.
+        console.log(`Activating tab '${control.label}'`);
+        await page
+          .locator(
+            "ul:not(.tab-panel__header__hidden-content) " + control.locator
+          )
+          .click();
+
+        await setAndCheckControls(page, control.controls);
+        break;
+      case control instanceof GroupField:
+        console.log(`Ensure group '${control.label}' is expanded.`);
+        if (
+          (await page.locator(control.locator + "children").innerHTML()) == ""
+        ) {
+          await page.locator(control.locator + " span").click();
+        }
+        await setAndCheckControls(page, control.controls);
+        break;
+      case control instanceof BaseField:
+        console.log(`Executing action of field '${control.label}'`);
+        await (control as BaseField).action(page);
+        break;
+      default:
+        throw `Case not implemented ${control.constructor.name}`;
+        break;
     }
   }
 }

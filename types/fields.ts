@@ -109,9 +109,7 @@ export abstract class BaseField implements IField {
   async checkValue(page: Page) {
     const elementLocator = page.locator(`#${this.column}`);
     let valueLocator: Locator;
-    console.log(
-      "Number of inputs " + (await elementLocator.locator("input").count())
-    );
+
     if ((await elementLocator.locator("input").count()) == 1) {
       expect(await elementLocator.locator("input").inputValue()).toBe(
         this.value.toString()
